@@ -1,0 +1,76 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+api:
+  dashboard: true
+  insecure: true
+entryPoints:
+  web:
+    address: :80
+    http:
+      redirections:
+         entryPoint:
+           to: websecure
+           scheme: https
+  websecure:
+    address: :443
+certificatesResolvers:
+  staging:
+    acme:
+      email: your@email.com
+      storage: /etc/traefik/certs/acme.json
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      httpChallenge:
+        entryPoint: web
+  production:
+    acme:
+      email: your@email.com
+      storage: /etc/traefik/certs/acme.json
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      httpChallenge:
+        entryPoint: web
+
+providers:
+  docker:
+    exposedByDefault: true
+  file:
+    directory: /etc/traefik
+    watch: true
+http:
+  middlewares:
+    https_redirect:
+      redirectScheme:
+        scheme: "https"
+        port: "443"
+        permanent: true
+    cors_headers:
+      headers:
+        customResponseHeaders:
+          server: "DevSoftsWeb"
+          addVaryHeader: true
+          accessControlAllowCredentials: false
+          accessControlAllowOriginList:
+            - "*"
+          accessControlAllowHeaders:
+            - "sentry-trace"
+            - "baggage"
+          accessControlAllowMethods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+          accessControlExposeHeaders:
+            - "sentry-trace"
+            - "baggage"
+          sslRedirect: true
+    rate_limiter:
+      rateLimit:
+        average: 100
+        period: 1s
+        burst: 15
+
+log:
+  level: DEBUG
+  filePath: /etc/traefik/traefik.log
+

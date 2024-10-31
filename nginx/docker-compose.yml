@@ -1,0 +1,16 @@
+services:
+  web:
+    image: nginx:latest 
+    ports:
+      - "8222:80"  
+    labels:
+      - "traefik.http.routers.nginx.entrypoints=websecure"
+      - "traefik.http.routers.nginx.rule=Host(`yourdomain.com`)"
+      - "traefik.http.routers.nginx.tls=true"
+      - "traefik.http.routers.nginx.tls.certresolver=production"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true
